@@ -1,9 +1,9 @@
 <template>
   <div class="pomodoroTimer">
     <div class="timer">
-      <h1>{{ hours }} : {{ min }} : {{ sec }}</h1>
+      <h1>{{ timerOutput[0] }} : {{ timerOutput[1] }} : {{ timerOutput[2] }}</h1>
       <span >{{ time }}</span>
-      <button class="" @click="timerStart">Старт</button>
+      <button class="" @click="btnStartOrStop">{{ stopped ? "Start" : "Stop" }}</button>
     </div>
   </div>
 </template>
@@ -13,22 +13,46 @@ export default {
   name: 'pomodoroTimer',
   data() {
     return {
-      startTime: 0,
-      nowTime: 0,
+      timeStart: 0,
+      timeNow: 0,
+      timeStoped: 0,
+
       sec: 0,
-      min:0,
-      hours:0,
+      min: 0,
+      hour: 0,
+
+      intervalVar: 0,
+      stopped: true,
     }
   },
   methods: {
     timerStart() {
-      this.startTime = Date.now();
-      setInterval(() => {
-        this.nowTime = Date.now();
-        this.sec = Math.floor(((this.nowTime - this.startTime) / 1000) % 60);
-        this.min = Math.floor(((this.nowTime - this.startTime) / 1000) / 60) % 60;
-        this.hours = Math.floor(((this.nowTime -this.startTime) / 1000) / 3600) % 24;
+      this.timeStart = Date.now();
+
+      this.intervalVar = setInterval(() => {
+        this.timeNow = Date.now();
+        this.sec = this.timeDifference.getSeconds();
+        this.min = this.timeDifference.getMinutes();
+        this.hour = this.timeDifference.getUTCHours();
       }, 100);
+
+      this.stopped = !this.stopped;
+    },
+    timerStop() {
+      clearTimeout(this.intervalVar);
+      this.timeStoped = Date.now();
+      this.stopped = !this.stopped;
+    }
+  },
+  computed: {
+    btnStartOrStop() {
+      return this.stopped ? this.timerStart : this.timerStop;
+    },
+    timerOutput() {
+      return [this.hour, this.min, this.sec].map(item => item.toString().length < 2 ? "0" + item : item);
+    },
+    timeDifference() {
+      return new Date(this.timeNow - this.timeStart);
     }
   }
 }
@@ -38,6 +62,6 @@ export default {
 <style scoped>
 .pomodoroTimer{
   margin: 0 auto;
-  border: 2px solid #ffa9ff;
+  border: 2px solid #747474;
 }
 </style>
